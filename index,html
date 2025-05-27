@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEO & Business Intelligence Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+        }
+        
+        .dashboard-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+        }
+        
+        .dashboard-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .metric-card {
+            transition: transform 0.2s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .tab-active {
+            color: #4f46e5;
+            border-bottom: 2px solid #4f46e5;
+        }
+        
+        .chart-container {
+            min-height: 300px;
+        }
+        
+        .keyword-row:hover {
+            background-color: #f9fafb;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            border-radius: 4px;
+            background-color: #e5e7eb;
+            overflow: hidden;
+        }
+        
+        .progress-value {
+            height: 100%;
+            border-radius: 4px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background: #cbd5e0;
+            border-radius: 2px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-white shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+                <div class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-600" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M5.5 16a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.977A4.5 4.5 0 1113.5 16h-8z" />
+                    </svg>
+                    <h1 class="ml-2 text-xl font-bold text-gray-900">InsightSEO Dashboard</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <input type="text" placeholder="Search..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 absolute left-3 top-2.5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Premium</span>
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23c7d2fe'/%3E%3Cpath d='M20 10 C 16 10, 13 13, 13 17 C 13 21, 16 24, 20 24 C 24 24, 27 21, 27 17 C 27 13, 24 10, 20 10 Z' fill='%234f46e5'/%3E%3Cpath d='M10 30 C 10 25, 14 20, 20 20 C 26 20, 30 25, 30 30 L 30 32 L 10 32 Z' fill='%234f46e5'/%3E%3C/svg%3E" alt="Profile" class="h-8 w-8 rounded-full ml-4">
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <!-- Date Range Selector -->
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-900">Business Intelligence Overview</h2>
+                <div class="flex items-center space-x-2">
+                    <button class="px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline mr-1" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+                        </svg>
+                        Last 30 Days
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline ml-1" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <button class="px-4 py-2 bg-indigo-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Export Report
+                    </button>
+                </div>
+            </div>
+
+            <!-- Key Metrics -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                <div class="dashboard-card p-6 metric-card">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Total Revenue</p>
+                            <h3 class="text-2xl font-bold text-gray-900 mt-1">$128,450</h3>
+                            <div class="flex items-center mt-2">
+                                <span class="text-green-500 text-sm font-medium flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd" />
+                                    </svg>
+                                    12.5%
+                                </span>
+                                <span class="text-gray-500 text-sm ml-1">vs last month</span>
+                            </div>
+                        </div>
+                        <div class="bg-green-100 p-2 rounded-md">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-card p-6 metric-card">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Organic Traffic</p>
+                            <h3 class="text-2xl font-bold text-gray-900 mt-1">24,389</h3>
+                            <div class="flex items-center mt-2">
+                                <span class="text-green-500 text-sm font-medium flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd" />
+                                    </svg>
+                                    8.2%
+                                </span>
+                                <span class="text-gray-500 text-sm ml-1">vs last month</span>
+                            </div>
+                        </div>
+                        <div class="bg-blue-100 p-2 rounded-md">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-card p-6 metric-card">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Conversion Rate</p>
+                            <h3 class="text-2xl font-bold text-gray-900 mt-1">3.42%</h3>
+                            <div class="flex items-center mt-2">
+                                <span class="text-red-500 text-sm font-medium flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M12 13a1 1 0 100 2h5a1 1 0 001-1v-5a1 1 0 10-2 0v2.586l-4.293-4.293a1 1 0 00-1.414 0L8 9.586 3.707 5.293a1 1 0 00-1.414 1.414l5 5a1 1 0 001.414 0L11 9.414 14.586 13H12z" clip-rule="evenodd" />
+                                    </svg>
+                                    0.8%
+                                </span>
+                                <span class="text-gray-500 text-sm ml-1">vs last month</span>
+                            </div>
+                        </div>
+                        <div class="bg-purple-100 p-2 rounded-md">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-card p-6 metric-card">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Avg. Position</p>
+                            <h3 class="text-2xl font-bold text-gray-900 mt-1">4.2</h3>
+                            <div class="flex items-center mt-2">
+                                <span class="text-green-500 text-sm font-medium flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd" />
+                                    </svg>
+                                    1.3
+                                </span>
+                                <span class="text-gray-500 text-sm ml-1">vs last month</span>
+                            </div>
+                        </div>
+                        <div class="bg-amber-100 p-2 rounded-md">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Dashboard Tabs -->
+            <div class="mb-6">
+                <div class="border-b border-gray-200">
+                    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                        <button data-tab="seo" class="tab-button tab-active whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                            SEO Performance
+                        </button>
+                        <button data-tab="llm" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                            LLM Visibility
+                        </button>
+                        <button data-tab="revenue" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                            Revenue Analytics
+                        </button>
+                        <button data-tab="brand" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                            Brand Management
+                        </button>
+                        <button data-tab="operations" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                            Operations
+                        </button>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Tab Content -->
+            <div id="tab-content-seo" class="tab-content">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Keyword Rankings Chart -->
+                    <div class="dashboard-card p-6 col-span-2">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-medium text-gray-900">Keyword Rankings Over Time</h3>
+                            <div class="flex space-x-2">
+                                <button class="px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-medium rounded-full">Google</button>
+                                <button class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">Bing</button>
+                                <button class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">DuckDuckGo</button>
+                            </div>
+                        </div>
+                        <div class="chart-container" id="keyword-rankings-chart"></div>
+                    </div>
+
+                    <!-- Top Keywords -->
+                    <div class="dashboard-card p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-medium text-gray-900">Top Keywords</h3>
+                            <button class="text-sm text-indigo-600 hover:text-indigo-800">View All</button>
+                        </div>
+                        <div class="space-y-4 max-h-[300px] overflow-y-auto scrollbar-thin">
+                            <div class="keyword-row p-3 border border-gray-100 rounded-lg">
+                                <div class="flex justify-between items-center">
+                                    <span class="font-medium text-gray-800">digital marketing agency</span>
+                                    <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">+2</span>
+                                </div>
+                                <div class="mt-2 flex justify-between items-center">
+                                    <div class="flex items-center">
+                                        <span class="text-sm font-bold text-gray-900 mr-2">Position: 3</span>
+                                        <span class="text-xs text-gray-500">Volume: 8,100</span>
+                                    </div>
+                                    <span class="text-xs font-medium text-gray-500">Difficulty: 67</span>
+                                </div>
+                                <div class="mt-2">
+                                    <div class="progress-bar">
+                                        <div class="progress-value bg-green-500" style="width: 75%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="keyword-row p-3 border border-gray-100 rounded-lg">
+                                <div class="flex justify-between items-center">
+                                    <span class="font-medium text-gray-800">seo services pricing</span>
+                                    <span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full">-1</span>
+                                </div>
+                                <div class="mt-2 flex justify-between items-center">
+                                    <div class="flex items-center">
+                                        <span class="text-sm font-bold text-gray-900 mr-2">Position: 5</span>
+                                        <span class="text-xs text-gray-500">Volume: 3,600</span>
+                                    </div>
+                                    <span class="text-xs font-medium text-gray-500">Difficulty: 52</span>
+                                </div>
+                                <div class="mt-2">
+                                    <div class="progress-bar">
+                                        <div class="progress-value bg-yellow-500" style="width: 60%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="keyword-row p-3 border border-gray-100 rounded-lg">
+                                <div class="flex justify-between items-center">
+                                    <span class="font-medium text-gray-800">local seo strategy</span>
+                                    <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">+5</span>
+                                </div>
+                                <div class="mt-2 flex justify-between items-center">
+                                    <div class="flex items-center">
+                                        <span class="text-sm font-bold text-gray-900 mr-2">Position: 2</span>
+                                        <span class="text-xs text-gray-500">Volume: 2,400</span>
+                                    </div>
+                                    <span class="text-xs font-medium text-gray-500">Difficulty: 45</span>
+                                </div>
+                                <div class="mt-2">
+                                    <div class="progress-bar">
+                                        <div class="progress-value bg-green-500" style="width: 85%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="keyword-row p-3 border border-gray-100 rounded-lg">
+                                <div class="flex justify-between items-center">
+                                    <span class="font-medium text-gray-800">content marketing roi</span>
+                                    <span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded-full">0</span>
+                                </div>
+                                <div class="mt-2 flex justify-between items-center">
+                                    <div class="flex items-center">
+                                        <span class="text-sm font-bold text-gray-900 mr-2">Position: 7</span>
+                                        <span class="text-xs text-gray-500">Volume: 1,900</span>
+                                    </div>
+                                    <span class="text-xs font-medium text-gray-500">Difficulty: 58</span>
+                                </div>
+                                <div class="mt-2">
+                                    <div class="progress-bar">
+                                        <div class="progress-value bg-yellow-500" style="width: 45%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="keyword-row p-3 border border-gray-100 rounded-lg">
+                                <div class="flex justify-between items-center">
+                                    <span class="font-medium text-gray-800">b2b marketing strategy</span>
+                                    <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">+3</span>
+                                </div>
+                                <div class="mt-2 flex justify-between items-center">
+                                    <div class="flex items-center">
+                                        <span class="text-sm font-bold text-gray-900 mr-2">Position: 4</span>
+                                        <span class="text-xs text-gray-500">Volume: 2,200</span>
+                                    </div>
+                                    <span class="text-xs font-medium text-gray-500">Difficulty: 61</span>
+                                </div>
+                                <div class="mt-2">
+                                    <div class="progress-bar">
+                                        <div class="progress-value bg-green-500" style="width: 70%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Competitor Analysis -->
+                <div class="dashboard-card p-6 mt-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-medium text-gray-900">Competitor Analysis</h3>
+                        <div class="flex space-x-2">
+                            <button class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">Visibility</button>
+                            <button class="px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-medium rounded-full">Keywords</button>
+                            <button class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">Backlinks</button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead>
+                                <tr>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Competitor</th>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keywords</th>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Top 3</th>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Top 10</th>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Traffic</th>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Common Keywords</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">A</div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">AgencyPro.com</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">1,245</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">324</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">782</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">45.2K</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">187</div>
+                                        <div class="text-xs text-gray-500">15% overlap</div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-bold">D</div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">DigitalGrowth.io</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2,187</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">512</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">1,024</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">78.6K</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">243</div>
+                                        <div class="text-xs text-gray-500">19% overlap</div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold">S</div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">SEOMasters.com</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">1,876</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">398</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">945</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">62.3K</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">215</div>
+                                        <div class="text-xs text-gray-500">17% overlap</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-content-llm" class="tab-content hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- LLM Visibility Chart -->
+                    <div class="dashboard-card p-6 col-span-2">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-medium text-gray-900">LLM Visibility Score</h3>
+                            <div class="flex space-x-2">
+                                <button class="px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-medium rounded-full">ChatGPT</button>
+                                <button class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">Gemini</button>
+                                <button class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">Claude</button>
+                                <button class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">Perplexity</button>
+                            </div>
+                        </div>
+                        <div class="chart-container" id="llm-visibility-chart"></div>
+                    </div>
+
+                    <!-- LLM Citation Stats -->
+                    <div class="dashboard-card p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-medium text-gray-900">LLM Citations</h3>
+                            <button class="text-sm text-indigo-600 hover:text-indigo-800">View Details</button>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center mr-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex justify-between">
+                                        <span class="font-medium text-gray-900">ChatGPT</span>
+                                        <span class="text-green-600 font-medium">+12%</span>
+                                    </div>
+                                    <div class="mt-1 flex items-center">
+                                        <div class="flex-1 bg-gray-200 rounded-full h-2">
+                                            <div class="bg-green-500 h-2 rounded-full" style="width: 78%"></div>
+                                        </div>
+                                        <span class="ml-2 text-sm text-gray-700">78%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center mr-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex justify-between">
+                                        <span class="font-medium text-gray-900">Gemini</span>
+                                        <span class="text-green-600 font-medium">+8%</span>
+                                    </div>
+                                    <div class="mt-1 flex items-center">
+                                        <div class="flex-1 bg-gray-200 rounded-full h-2">
+                                            <div class="bg-blue-500 h-2 rounded-full" style="width: 65%"></div>
+                                        </div>
+                                        <span class="ml-2 text-sm text-gray-700">65%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center mr-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex justify-between">
+                                        <span class="font-medium text-gray-900">Claude</span>
+                                        <span class="text-red-600 font-medium">-3%</span>
+                                    </div>
+                                    <div class="mt-1 flex items-center">
+                                        <div class="flex-1 bg-gray-200 rounded-full h-2">
+                                            <div class="bg-purple-500 h-2 rounded-full" style="width: 52%"></div>
+                                        </div>
+                                        <span class="ml-2 text-sm text-gray-700">52%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 rounded-lg bg-amber-100 flex items-center justify-center mr-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex justify-between">
+                                        <span class="font-medium text-gray-900">Perplexity</span>
+                                        <span class="text-green-600 font-medium">+15%</span>
+                                    </div>
+                                    <div class="mt-1 flex items-center">
+                                        <div class="flex-1 bg-gray-200 rounded-full h-2">
+                                            <div class="bg-amber-500 h-2 rounded-full" style="width: 45%"></div>
+                                        </div>
+                                        <span class="ml-2 text-sm text-gray-700">45%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LLM Query Analysis -->
+                <div class="dashboard-card p-6 mt-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-medium text-gray-900">LLM Query Analysis</h3>
+                        <button class="px-4 py-2 bg-indigo-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Add Tracking
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead>
+                                <tr>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Query</th>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">LLM</th>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Citation Position</th>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sentiment</th>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trend</th>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">best digital marketing agency</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            ChatGPT
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">1st mention</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                            </svg>
+                                            <span class="text-sm text-gray-900">Positive</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd" />
+                                        </svg>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <button class="text-indigo-600 hover:text-indigo-900">View</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">seo strategy for small business</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                            Gemini
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2nd mention</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                            </svg>
+                                            <span class="text-sm text-gray-900">Positive</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M7.707 10.293a1 1 0 100 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 12.586V6a1 1 0 10-2 0v6.586l-1.293-1.293a1 1 0 00-1.414 0z" clip-rule="evenodd" />
+                                        </svg>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <button class="text-indigo-600 hover:text-indigo-900">View</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">content marketing examples</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-amber-100 text-amber-800">
+                                            Perplexity
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">3rd mention</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 000 2h6a1 1 0 100-2H7z" clip-rule="evenodd" />
+                                            </svg>
+                                            <span class="text-sm text-gray-900">Neutral</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd" />
+                                        </svg>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <button class="text-indigo-600 hover:text-indigo-900">View</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-content-revenue" class="tab-content hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Revenue Chart -->
+                    <div class="dashboard-card p-6 col-span-2">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-medium text-gray-900">Revenue by Channel</h3>
+                            <div class="flex space-x-2">
+                                <button class="px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-medium rounded-full">Monthly</button>
+                                <button class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">Quarterly</button>
+                                <button class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">Yearly</button>
+                            </div>
+                        </div>
+                        <div class="chart-container" id="revenue-chart"></div>
+                    </div>
+
+                    <!-- Conversion Funnel -->
+                    <div class="dashboard-card p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-medium text-gray-900">Conversion Funnel</h3>
+                            <button class="text-sm text-indigo-600 hover:text-indigo-800">View Details</button>
+                        </div>
+                        <div class="space-y-6 mt-6">
+                            <div class="relative">
+                                <div class="h-16 bg-indigo-500 rounded-t-lg flex items-center justify-center text-white font-medium">
+                                    Visitors
+                                    <span class="ml-2 bg-white text-indigo-600 px-2 py-0.5 rounded text-xs">24,389</span>
+                                </div>
+                                <div class="absolute -bottom-3 left-1/2 transform -translate-x-1/2">
+                                    <div class="w-0 h-0 border-l-[15px] border-l-transparent border-t-[15px] border-t-indigo-500 border-r-[15px] border-r-transparent"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="relative">
+                                <div class="h-16 bg-indigo-400 rounded-lg flex items-center justify-center text-white font-medium">
+                                    Leads
+                                    <span class="ml-2 bg-white text-indigo-600 px-2 py-0.5 rounded text-xs">4,872</span>
+                                </div>
+                                <div class="absolute -bottom-3 left-1/2 transform -translate-x-1/2">
+                                    <div class="w-0 h-0 border-l-[15px] border-l-transparent border-t-[15px] border-t-indigo-400 border-r-[15px] border-r-transparent"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="relative">
+                                <div class="h-16 bg-indigo-300 rounded-lg flex items-center justify-center text-white font-medium">
+                                    Qualified Leads
+                                    <span class="ml-2 bg-white text-indigo-600 px-2 py-0.5 rounded text-xs">1,245</span>
+                                </div>
+                                <div class="absolute -bottom-3 left-1/2 transform -translate-x-1/2">
+                                    <div class="w-0 h-0 border-l-[15px] border-l-transparent border-t-[15px] border-t-indigo-300 border-r-[15px] border-r-transparent"></div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="h-16 bg-indigo-200 rounded-b-lg flex items-center justify-center text-indigo-800 font-medium">
+                                    Customers
+                                    <span class="ml-2 bg-white text-indigo-600 px-2 py-0.5 rounded text-xs">312</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Revenue by Source -->
+                <div class="dashboard-card p-6 mt-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-medium text-gray-900">Revenue by Source</h3>
+                        <button class="px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Download CSV
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead>
+                                <tr>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue</th>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customers</th>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avg. Deal Size</th>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">YoY Growth</th>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trend</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                                                </svg>
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">Organic Search</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">$52,450</div>
+                                        <div class="text-xs text-gray-500">40.8% of total</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">124</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$422.98</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            +18.2%
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <svg class="w-16 h-8" viewBox="0 0 64 16">
+                                            <path d="M0,8 L8,10 L16,6 L24,12 L32,8 L40,10 L48,4 L56,7 L64,2" fill="none" stroke="#4f46e5" stroke-width="2"></path>
+                                        </svg>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                                </svg>
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">Email Marketing</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">$32,120</div>
+                                        <div class="text-xs text-gray-500">25.0% of total</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">78</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$411.79</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            +12.5%
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <svg class="w-16 h-8" viewBox="0 0 64 16">
+                                            <path d="M0,12 L8,10 L16,11 L24,8 L32,9 L40,7 L48,5 L56,4 L64,2" fill="none" stroke="#4f46e5" stroke-width="2"></path>
+                                        </svg>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                                </svg>
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">Paid Search</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">$24,680</div>
+                                        <div class="text-xs text-gray-500">19.2% of total</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">62</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$398.06</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                            -2.4%
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <svg class="w-16 h-8" viewBox="0 0 64 16">
+                                            <path d="M0,6 L8,8 L16,7 L24,9 L32,8 L40,10 L48,12 L56,11 L64,14" fill="none" stroke="#4f46e5" stroke-width="2"></path>
+                                        </svg>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="h-8 w-8 rounded-full bg-pink-100 flex items-center justify-center text-pink-600">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+                                                </svg>
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">Social Media</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">$19,200</div>
+                                        <div class="text-xs text-gray-500">15.0% of total</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">48</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$400.00</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            +24.8%
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <svg class="w-16 h-8" viewBox="0 0 64 16">
+                                            <path d="M0,14 L8,12 L16,10 L24,8 L32,6 L40,7 L48,5 L56,4 L64,2" fill="none" stroke="#4f46e5" stroke-width="2"></path>
+                                        </svg>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-content-brand" class="tab-content hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Brand Sentiment Chart -->
+                    <div class="dashboard-card p-6 col-span-2">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-medium text-gray-900">Brand Sentiment Analysis</h3>
+                            <div class="flex space-x-2">
+                                <button class="px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-medium rounded-full">All Sources</button>
+                                <button class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">Social</button>
+                                <button class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">Reviews</button>
+                            </div>
+                        </div>
+                        <div class="chart-container" id="brand-sentiment-chart"></div>
+                    </div>
+
+                    <!-- Brand Mentions -->
+                    <div class="dashboard-card p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-medium text-gray-900">Brand Mentions</h3>
+                            <button class="text-sm text-indigo-600 hover:text-indigo-800">View All</button>
+                        </div>
+                        <div class="space-y-4 max-h-[300px] overflow-y-auto scrollbar-thin">
+                            <div class="p-3 border border-gray-100 rounded-lg">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                            </svg>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm font-medium text-gray-900">Twitter</p>
+                                            <p class="text-xs text-gray-500">2 hours ago</p>
+                                        </div>
+                                    </div>
+                                    <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Positive</span>
+                                </div>
+                                <p class="mt-2 text-sm text-gray-600">Just had an amazing experience with @YourBrand's customer service team. They went above and beyond to solve my issue!</p>
+                            </div>
+                            
+                            <div class="p-3 border border-gray-100 rounded-lg">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="h-8 w-8 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.809l-3.956 3.956a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.539 1.118l-3.956-3.956a1 1 0 00-1.175 0l-3.956 3.956c-.783.57-1.838-.196-1.539-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.956-3.956c-.783-.57-.38-1.809.588-1.809h4.915a1 1 0 00.95-.69L11.049 2.927z" />
+                                            </svg>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm font-medium text-gray-900">Review Site (G2)</p>
+                                            <p class="text-xs text-gray-500">5 hours ago</p>
+                                        </div>
+                                    </div>
+                                    <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Neutral</span>
+                                </div>
+                                <p class="mt-2 text-sm text-gray-600">A new review on G2: "The platform is good, but the UI could be more intuitive."</p>
+                            </div>
+                             <div class="p-3 border border-gray-100 rounded-lg">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="h-8 w-8 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                                            </svg>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm font-medium text-gray-900">News Article (TechCrunch)</p>
+                                            <p class="text-xs text-gray-500">1 day ago</p>
+                                        </div>
+                                    </div>
+                                    <span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Negative</span>
+                                </div>
+                                <p class="mt-2 text-sm text-gray-600">TechCrunch article mentions "YourBrand faces challenges with recent product update, users report bugs."</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-content-operations" class="tab-content hidden">
+                <div class="dashboard-card p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Operational Metrics</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center p-3 border border-gray-100 rounded-lg">
+                            <span class="text-sm text-gray-700">Site Uptime (Last 30d):</span>
+                            <span class="text-sm font-medium text-green-600">99.98%</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 border border-gray-100 rounded-lg">
+                            <span class="text-sm text-gray-700">Average Page Load Time:</span>
+                            <span class="text-sm font-medium text-gray-900">1.2s</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 border border-gray-100 rounded-lg">
+                            <span class="text-sm text-gray-700">Crawled Pages (Last 24h):</span>
+                            <span class="text-sm font-medium text-gray-900">15,670</span>
+                        </div>
+                         <div class="flex justify-between items-center p-3 border border-gray-100 rounded-lg">
+                            <span class="text-sm text-gray-700">Indexing Issues:</span>
+                            <span class="text-sm font-medium text-yellow-600">3 (Low Priority)</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 border border-gray-100 rounded-lg">
+                            <span class="text-sm text-gray-700">SSL Certificate Validity:</span>
+                            <span class="text-sm font-medium text-green-600">Valid (Expires in 85 days)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Tab switching
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetTab = button.dataset.tab;
+
+                    tabButtons.forEach(btn => {
+                        btn.classList.remove('tab-active', 'text-indigo-600', 'border-indigo-500');
+                        btn.classList.add('text-gray-500', 'border-transparent', 'hover:text-gray-700', 'hover:border-gray-300');
+                    });
+                    button.classList.add('tab-active', 'text-indigo-600', 'border-indigo-500');
+                    button.classList.remove('text-gray-500', 'border-transparent', 'hover:text-gray-700', 'hover:border-gray-300');
+                    
+                    tabContents.forEach(content => {
+                        if (content.id === `tab-content-${targetTab}`) {
+                            content.classList.remove('hidden');
+                        } else {
+                            content.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
+            // Chart Initializations
+            // 1. Keyword Rankings Over Time (ApexCharts - Line)
+            if (document.getElementById('keyword-rankings-chart')) {
+                var keywordRankingsOptions = {
+                    series: [{
+                        name: "Avg. Rank",
+                        data: [10, 12, 8, 9, 7, 6, 5, 4.5, 4.2, 4]
+                    }],
+                    chart: {
+                        height: 350,
+                        type: 'line',
+                        zoom: { enabled: false },
+                        toolbar: { show: false }
+                    },
+                    dataLabels: { enabled: false },
+                    stroke: { curve: 'smooth', width: 3 },
+                    xaxis: {
+                        categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
+                    },
+                    yaxis: { reversed: true, min:1, max:20, tickAmount: 5, labels: { formatter: (val) => Math.round(val) } },
+                    colors: ['#4f46e5'],
+                    tooltip: { y: { formatter: (val) => "Rank: " + val } }
+                };
+                var keywordRankingsChart = new ApexCharts(document.querySelector("#keyword-rankings-chart"), keywordRankingsOptions);
+                keywordRankingsChart.render();
+            }
+
+            // 2. LLM Visibility Score (ApexCharts - Radial Bar)
+            if (document.getElementById('llm-visibility-chart')) {
+                 var llmVisibilityOptions = {
+                    series: [78, 65, 52, 45],
+                    chart: {
+                        height: 350,
+                        type: 'radialBar',
+                    },
+                    plotOptions: {
+                        radialBar: {
+                            offsetY: 0,
+                            startAngle: 0,
+                            endAngle: 270,
+                            hollow: {
+                                margin: 5,
+                                size: '30%',
+                                background: 'transparent',
+                                image: undefined,
+                            },
+                            dataLabels: {
+                                name: { show: false },
+                                value: { show: false }
+                            }
+                        }
+                    },
+                    colors: ['#10B981', '#3B82F6', '#8B5CF6', '#F59E0B'], // Green, Blue, Purple, Amber
+                    labels: ['ChatGPT', 'Gemini', 'Claude', 'Perplexity'],
+                    legend: {
+                        show: true,
+                        floating: true,
+                        fontSize: '12px',
+                        position: 'left',
+                        offsetX: 50,
+                        offsetY: 15,
+                        labels: { useSeriesColors: true, },
+                        markers: { size: 0 },
+                        formatter: function(seriesName, opts) {
+                            return seriesName + ":  " + opts.w.globals.series[opts.seriesIndex] + '%'
+                        },
+                        itemMargin: { vertical: 3 }
+                    },
+                    responsive: [{
+                        breakpoint: 480,
+                        options: {
+                            legend: { show: false }
+                        }
+                    }]
+                };
+                var llmVisibilityChart = new ApexCharts(document.querySelector("#llm-visibility-chart"), llmVisibilityOptions);
+                llmVisibilityChart.render();
+            }
+
+            // 3. Revenue by Channel (Chart.js - Bar)
+            if (document.getElementById('revenue-chart')) {
+                const revenueCtx = document.getElementById('revenue-chart').getContext('2d');
+                new Chart(revenueCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                        datasets: [{
+                            label: 'Organic',
+                            data: [12000, 19000, 15000, 22000, 18000, 25000],
+                            backgroundColor: 'rgba(79, 70, 229, 0.7)', // Indigo
+                        }, {
+                            label: 'Paid',
+                            data: [8000, 12000, 9000, 15000, 10000, 16000],
+                            backgroundColor: 'rgba(59, 130, 246, 0.7)', // Blue
+                        }, {
+                            label: 'Referral',
+                            data: [5000, 7000, 6000, 8000, 7500, 9000],
+                            backgroundColor: 'rgba(16, 185, 129, 0.7)', // Green
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: { stacked: true },
+                            y: { stacked: true, beginAtZero: true, ticks: { callback: value => `$${value/1000}k` } }
+                        },
+                        plugins: { legend: { position: 'top' } }
+                    }
+                });
+            }
+
+            // 4. Brand Sentiment Analysis (Chart.js - Doughnut)
+            if (document.getElementById('brand-sentiment-chart')) {
+                const sentimentCtx = document.getElementById('brand-sentiment-chart').getContext('2d');
+                new Chart(sentimentCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Positive', 'Negative', 'Neutral'],
+                        datasets: [{
+                            label: 'Brand Sentiment',
+                            data: [65, 15, 20], // Example percentages
+                            backgroundColor: [
+                                'rgba(16, 185, 129, 0.8)', // Green
+                                'rgba(239, 68, 68, 0.8)',  // Red
+                                'rgba(245, 158, 11, 0.8)' // Amber
+                            ],
+                            borderColor: [
+                                'rgba(16, 185, 129, 1)',
+                                'rgba(239, 68, 68, 1)',
+                                'rgba(245, 158, 11, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
